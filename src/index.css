@@ -8,35 +8,54 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Content Creator Dark Theme */
+    --background: 220 27% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 25% 10%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 263 70% 50%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 25% 15%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 25% 15%;
+    --muted-foreground: 215 16% 60%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 193 100% 50%;
+    --accent-foreground: 220 27% 8%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 25% 20%;
+    --input: 220 25% 15%;
+    --ring: 263 70% 50%;
 
-    --radius: 0.5rem;
+    /* Custom Design Tokens */
+    --neon-blue: 193 100% 50%;
+    --neon-purple: 263 70% 50%;
+    --neon-pink: 323 100% 68%;
+    --glass: 220 25% 15%;
+    --glass-border: 220 25% 25%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(193 100% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(323 100% 68%), hsl(263 70% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(193 100% 50%), hsl(323 100% 68%));
+    --gradient-glass: linear-gradient(135deg, hsl(220 25% 15% / 0.8), hsl(220 25% 10% / 0.9));
+    
+    /* Shadows */
+    --shadow-neon: 0 0 20px hsl(var(--neon-blue) / 0.5);
+    --shadow-purple: 0 0 20px hsl(var(--neon-purple) / 0.3);
+    --shadow-glass: 0 8px 32px hsl(220 25% 5% / 0.4);
+    
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
