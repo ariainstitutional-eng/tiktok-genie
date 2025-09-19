@@ -18,7 +18,11 @@ const VOICES = [
   { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", description: "Middle-aged Male, Deep" },
 ];
 
-export function VoiceGenerator() {
+interface VoiceGeneratorProps {
+  onVoiceGenerated?: () => void;
+}
+
+export function VoiceGenerator({ onVoiceGenerated }: VoiceGeneratorProps) {
   const [script, setScript] = useState("");
   const [selectedVoice, setSelectedVoice] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
@@ -64,6 +68,21 @@ export function VoiceGenerator() {
       );
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
+
+      // Save to database
+      const { data: user } = await supabase.auth.getUser();
+      if (user.user) {
+        const selectedVoiceData = VOICES.find(v => v.id === selectedVoice);
+        await supabase.from('voice_clips').insert({
+          user_id: user.user.id,
+          title: `Voice Clip - ${new Date().toLocaleDateString()}`,
+          voice_id: selectedVoice,
+          voice_name: selectedVoiceData?.name || 'Unknown',
+          file_size: audioBlob.size,
+          duration_seconds: Math.ceil(script.length / 150) // Approximate
+        });
+        onVoiceGenerated?.();
+      }
 
       toast({
         title: "Voice generated!",

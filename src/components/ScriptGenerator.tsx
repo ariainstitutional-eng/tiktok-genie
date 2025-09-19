@@ -2,37 +2,42 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Copy, RefreshCw } from "lucide-react";
+import { Loader2, Sparkles, Copy, Download, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const NICHES = [
-  "Money Hacks",
-  "Tech Facts", 
-  "Life Tips",
-  "Fitness Motivation",
+  "Tech Facts",
+  "History Stories", 
+  "Science Discoveries",
+  "Life Hacks",
+  "Motivational",
   "Psychology Facts",
   "Business Tips",
-  "Food Hacks",
-  "Travel Tips"
+  "Health & Wellness"
 ];
 
-export function ScriptGenerator() {
-  const [niche, setNiche] = useState("");
-  const [customPrompt, setCustomPrompt] = useState("");
+interface ScriptGeneratorProps {
+  onScriptGenerated?: () => void;
+}
+
+export function ScriptGenerator({ onScriptGenerated }: ScriptGeneratorProps) {
+  const [selectedNiche, setSelectedNiche] = useState("");
+  const [promptExtra, setPromptExtra] = useState("");
   const [generatedScript, setGeneratedScript] = useState("");
+  const [title, setTitle] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
   const generateScript = async () => {
-    if (!niche) {
+    if (!selectedNiche) {
       toast({
         title: "Missing niche",
-        description: "Please select a niche for your content.",
+        description: "Please select a content niche.",
         variant: "destructive",
       });
       return;
@@ -42,17 +47,33 @@ export function ScriptGenerator() {
     try {
       const { data, error } = await supabase.functions.invoke('generate-script', {
         body: { 
-          niche,
-          promptExtra: customPrompt 
+          niche: selectedNiche.toLowerCase(),
+          promptExtra: promptExtra || ""
         }
       });
 
       if (error) throw error;
 
       setGeneratedScript(data.script);
+      setTitle(data.title);
+
+      // Save to database
+      const { data: user } = await supabase.auth.getUser();
+      if (user.user) {
+        await supabase.from('scripts').insert({
+          user_id: user.user.id,
+          title: data.title,
+          content: data.script,
+          niche: selectedNiche,
+          prompt_extra: promptExtra,
+          word_count: data.script.split(' ').length
+        });
+        onScriptGenerated?.();
+      }
+      
       toast({
         title: "Script generated!",
-        description: "Your viral content script is ready.",
+        description: "Your content is ready for review.",
       });
     } catch (error) {
       console.error('Error generating script:', error);
@@ -74,6 +95,25 @@ export function ScriptGenerator() {
     });
   };
 
+  const downloadScript = () => {
+    if (!generatedScript) return;
+    
+    const blob = new Blob([generatedScript], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title || 'script'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Downloaded!",
+      description: "Script saved to your device.",
+    });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Input Panel */}
@@ -90,13 +130,13 @@ export function ScriptGenerator() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="niche">Content Niche</Label>
-            <Select value={niche} onValueChange={setNiche}>
+            <Select value={selectedNiche} onValueChange={setSelectedNiche}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your niche" />
               </SelectTrigger>
               <SelectContent>
                 {NICHES.map((n) => (
-                  <SelectItem key={n} value={n.toLowerCase()}>
+                  <SelectItem key={n} value={n}>
                     {n}
                   </SelectItem>
                 ))}
@@ -109,15 +149,15 @@ export function ScriptGenerator() {
             <Textarea
               id="custom-prompt"
               placeholder="Add specific details, tone, or requirements..."
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
+              value={promptExtra}
+              onChange={(e) => setPromptExtra(e.target.value)}
               className="min-h-[100px]"
             />
           </div>
 
           <Button 
             onClick={generateScript}
-            disabled={isGenerating || !niche}
+            disabled={isGenerating || !selectedNiche}
             className="w-full bg-gradient-primary hover:opacity-90 text-white"
           >
             {isGenerating ? (
@@ -153,11 +193,10 @@ export function ScriptGenerator() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={generateScript}
-                  disabled={isGenerating}
-                  className="text-neon-purple border-neon-purple/30"
+                  onClick={downloadScript}
+                  className="text-neon-green border-neon-green/30"
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                 </Button>
               </div>
             )}

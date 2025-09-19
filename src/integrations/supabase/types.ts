@@ -14,7 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      scripts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          niche: string
+          prompt_extra: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          word_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          niche: string
+          prompt_extra?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          word_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          niche?: string
+          prompt_extra?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          word_count?: number | null
+        }
+        Relationships: []
+      }
+      voice_clips: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          duration_seconds: number | null
+          file_size: number | null
+          id: string
+          script_id: string | null
+          title: string
+          user_id: string | null
+          voice_id: string
+          voice_name: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          id?: string
+          script_id?: string | null
+          title: string
+          user_id?: string | null
+          voice_id: string
+          voice_name: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          id?: string
+          script_id?: string | null
+          title?: string
+          user_id?: string | null
+          voice_id?: string
+          voice_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_clips_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
