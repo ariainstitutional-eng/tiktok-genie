@@ -58,18 +58,14 @@ export function ScriptGenerator({ onScriptGenerated }: ScriptGeneratorProps) {
       setTitle(data.title);
 
       // Save to database
-      const { data: user } = await supabase.auth.getUser();
-      if (user.user) {
-        await supabase.from('scripts').insert({
-          user_id: user.user.id,
-          title: data.title,
-          content: data.script,
-          niche: selectedNiche,
-          prompt_extra: promptExtra,
-          word_count: data.script.split(' ').length
-        });
-        onScriptGenerated?.();
-      }
+      await supabase.from('scripts').insert({
+        title: `Script - ${selectedNiche} - ${new Date().toLocaleDateString()}`,
+        content: data.script,
+        niche: selectedNiche,
+        prompt_extra: promptExtra,
+        word_count: data.script.split(' ').length
+      });
+      onScriptGenerated?.();
       
       toast({
         title: "Script generated!",

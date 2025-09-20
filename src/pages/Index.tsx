@@ -5,55 +5,23 @@ import { ContentLibrary } from "@/components/ContentLibrary";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Zap, FileText, Mic, Library, TrendingUp, Download, Clock, Users, LogIn, UserPlus, LogOut } from "lucide-react";
+import { Zap, FileText, Mic, Library, TrendingUp, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import type { User } from "@supabase/supabase-js";
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState("generate");
-  const [user, setUser] = useState<User | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalScripts: 0,
     totalVoiceClips: 0,
     storageUsed: 0,
     totalDownloads: 0,
   });
-  const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    loadStats();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      loadStats();
-    }
-  }, [user]);
-
   const loadStats = async () => {
-    if (!user) return;
-
     try {
       // Get scripts count
       const { count: scriptsCount } = await supabase
@@ -83,190 +51,30 @@ export default function Index() {
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in.",
-        });
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({
-          title: "Account created!",
-          description: "You can now start creating content.",
-        });
-      }
-      setShowAuth(false);
-      setEmail("");
-      setPassword("");
-    } catch (error: any) {
-      toast({
-        title: "Authentication failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Signed out",
-      description: "You have been successfully signed out.",
-    });
-  };
-
-  if (!user && !showAuth) {
-    return (
-      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
-        <Card className="w-full max-w-md bg-glass border-glass-border shadow-glass">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-primary rounded-xl">
-                <Zap className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl bg-gradient-primary bg-clip-text text-transparent">
-              Content Creator Studio
-            </CardTitle>
-            <CardDescription>
-              AI-powered script generation and voice synthesis
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button 
-              onClick={() => { setShowAuth(true); setIsLogin(true); }}
-              className="w-full bg-gradient-primary hover:opacity-90"
-            >
-              <LogIn className="h-4 w-4 mr-2" />
-              Sign In
-            </Button>
-            <Button 
-              onClick={() => { setShowAuth(true); setIsLogin(false); }}
-              variant="outline"
-              className="w-full"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Create Account
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!user && showAuth) {
-    return (
-      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
-        <Card className="w-full max-w-md bg-glass border-glass-border shadow-glass">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">
-              {isLogin ? "Sign In" : "Create Account"}
-            </CardTitle>
-            <CardDescription>
-              {isLogin ? "Welcome back to your content studio" : "Start creating amazing content today"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAuth} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-primary hover:opacity-90"
-                disabled={loading}
-              >
-                {loading ? "Loading..." : (isLogin ? "Sign In" : "Create Account")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setIsLogin(!isLogin)}
-              >
-                {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowAuth(false)}
-              >
-                Back
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-dark">
       {/* Header */}
       <header className="border-b border-glass-border bg-glass backdrop-blur-xl">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-primary rounded-xl">
-                <Zap className="h-6 w-6 text-white" />
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-primary rounded-xl">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Content Creator Studio
+                  </h1>
+                  <p className="text-sm text-muted-foreground">AI-powered content generation</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Content Creator Studio
-                </h1>
-                <p className="text-sm text-muted-foreground">AI-powered content generation</p>
+              <div className="flex items-center gap-4">
+                <Badge variant="secondary" className="bg-neon-purple/20 text-neon-purple border-neon-purple/30">
+                  Production Ready
+                </Badge>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="secondary" className="bg-neon-purple/20 text-neon-purple border-neon-purple/30">
-                Production Ready
-              </Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
             </div>
           </div>
-        </div>
       </header>
 
       <div className="container mx-auto px-6 py-8">
