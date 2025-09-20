@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Script {
   id: string;
@@ -47,6 +48,7 @@ interface VoiceClip {
 }
 
 export function ContentLibrary() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("scripts");
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -55,24 +57,30 @@ export function ContentLibrary() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadContent();
-  }, []);
+    if (user) {
+      loadContent();
+    }
+  }, [user]);
 
   const loadContent = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
-      // Load scripts
+      // Load scripts for current user
       const { data: scriptsData, error: scriptsError } = await supabase
         .from('scripts')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (scriptsError) throw scriptsError;
 
-      // Load voice clips
+      // Load voice clips for current user
       const { data: voiceClipsData, error: voiceClipsError } = await supabase
         .from('voice_clips')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (voiceClipsError) throw voiceClipsError;

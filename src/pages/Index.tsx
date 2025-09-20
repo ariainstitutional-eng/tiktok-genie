@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScriptGenerator } from "@/components/ScriptGenerator";
 import { VoiceGenerator } from "@/components/VoiceGenerator";
 import { ContentLibrary } from "@/components/ContentLibrary";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, FileText, Mic, Library, TrendingUp, Download } from "lucide-react";
+import { Zap, FileText, Mic, Library, TrendingUp, Download, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Index() {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("generate");
   const [stats, setStats] = useState({
     totalScripts: 0,
@@ -18,25 +23,38 @@ export default function Index() {
   });
 
   useEffect(() => {
-    loadStats();
-  }, []);
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      loadStats();
+    }
+  }, [user]);
 
   const loadStats = async () => {
+    if (!user) return;
+    
     try {
-      // Get scripts count
+      // Get scripts count for current user
       const { count: scriptsCount } = await supabase
         .from('scripts')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-      // Get voice clips count
+      // Get voice clips count for current user
       const { count: voiceClipsCount } = await supabase
         .from('voice_clips')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-      // Get storage usage
+      // Get storage usage for current user
       const { data: storageData } = await supabase
         .from('voice_clips')
-        .select('file_size');
+        .select('file_size')
+        .eq('user_id', user.id);
 
       const totalStorage = storageData?.reduce((acc, clip) => acc + (clip.file_size || 0), 0) || 0;
 
@@ -50,6 +68,21 @@ export default function Index() {
       console.error('Error loading stats:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-dark">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neon-blue mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth page
+  }
 
   return (
     <div className="min-h-screen bg-gradient-dark">
@@ -69,6 +102,19 @@ export default function Index() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  {user.email}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
                 <Badge variant="secondary" className="bg-neon-purple/20 text-neon-purple border-neon-purple/30">
                   Production Ready
                 </Badge>
