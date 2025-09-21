@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, FileText, Mic, Library, TrendingUp, Download, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 export default function Index() {
   const { user, loading, signOut } = useAuth();
@@ -86,6 +88,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-dark">
+      <OfflineIndicator />
       {/* Header */}
       <header className="border-b border-glass-border bg-glass backdrop-blur-xl">
           <div className="container mx-auto px-6 py-4">
@@ -102,6 +105,7 @@ export default function Index() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
+                <NotificationCenter />
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
                   {user.email}

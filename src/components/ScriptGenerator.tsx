@@ -77,11 +77,19 @@ export function ScriptGenerator({ onScriptGenerated }: ScriptGeneratorProps) {
         title: "Script generated!",
         description: "Your content is ready for review.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating script:', error);
+      let errorMessage = "Please try again in a moment.";
+      
+      if (error?.message?.includes('API key')) {
+        errorMessage = "API configuration issue. Please contact support.";
+      } else if (error?.message?.includes('network')) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+      
       toast({
         title: "Generation failed",
-        description: "Please try again in a moment.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

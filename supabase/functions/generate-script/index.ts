@@ -18,7 +18,19 @@ serve(async (req) => {
     const { niche, promptExtra } = await req.json();
 
     if (!niche) {
-      throw new Error('Niche is required');
+      console.error('Missing niche parameter');
+      return new Response(JSON.stringify({ error: 'Niche is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!openAIApiKey) {
+      console.error('Missing OpenAI API key');
+      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Generating script for niche:', niche);

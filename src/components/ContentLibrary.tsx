@@ -184,7 +184,7 @@ export function ContentLibrary() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-neon-blue border-t-transparent mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading your content...</p>
         </div>
       </div>
@@ -340,13 +340,13 @@ export function ContentLibrary() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem disabled>
                             <Play className="h-4 w-4 mr-2" />
-                            Play Audio
+                            Play Audio (Preview only)
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem disabled>
                             <Download className="h-4 w-4 mr-2" />
-                            Download
+                            Download (Audio stored locally)
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive"

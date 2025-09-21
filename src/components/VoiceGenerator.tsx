@@ -90,11 +90,21 @@ export function VoiceGenerator({ onVoiceGenerated }: VoiceGeneratorProps) {
         title: "Voice generated!",
         description: "Your AI voiceover is ready to play.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating voice:', error);
+      let errorMessage = "Please try again in a moment.";
+      
+      if (error?.message?.includes('API key')) {
+        errorMessage = "Voice service configuration issue. Please contact support.";
+      } else if (error?.message?.includes('network')) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (error?.message?.includes('quota')) {
+        errorMessage = "Voice generation quota exceeded. Please try again later.";
+      }
+      
       toast({
         title: "Generation failed",
-        description: "Please try again in a moment.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
