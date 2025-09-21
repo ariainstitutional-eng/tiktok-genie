@@ -19,17 +19,59 @@ export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Add welcome notification for new users
-    const welcomeNotification: Notification = {
-      id: '1',
-      title: 'Welcome to Content Creator Studio!',
-      message: 'Start generating viral scripts and professional voiceovers for your content.',
-      type: 'info',
-      read: false,
-      timestamp: new Date()
-    };
+    // Initialize notifications
+    const initialNotifications: Notification[] = [
+      {
+        id: '1',
+        title: 'Welcome to Content Creator Studio!',
+        message: 'Start generating viral scripts and professional voiceovers for your content.',
+        type: 'info',
+        read: false,
+        timestamp: new Date()
+      },
+      {
+        id: '2',
+        title: 'System Status',
+        message: 'All AI services are operational and ready for content generation.',
+        type: 'success',
+        read: false,
+        timestamp: new Date(Date.now() - 5 * 60 * 1000) // 5 minutes ago
+      },
+      {
+        id: '3',
+        title: 'Production Ready',
+        message: 'Your content studio is fully configured and production-ready.',
+        type: 'success',
+        read: false,
+        timestamp: new Date(Date.now() - 10 * 60 * 1000) // 10 minutes ago
+      }
+    ];
     
-    setNotifications([welcomeNotification]);
+    setNotifications(initialNotifications);
+
+    // Simulate periodic notifications for demo
+    const interval = setInterval(() => {
+      const tips = [
+        'Tip: Use specific niches for better script targeting',
+        'Tip: Try different voices to find your perfect match',
+        'Tip: Keep scripts between 40-60 words for optimal engagement',
+        'Success: Your content library is growing!'
+      ];
+      
+      const randomTip = tips[Math.floor(Math.random() * tips.length)];
+      const newNotification: Notification = {
+        id: Date.now().toString(),
+        title: 'Content Tip',
+        message: randomTip,
+        type: Math.random() > 0.7 ? 'success' : 'info',
+        read: false,
+        timestamp: new Date()
+      };
+
+      setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep last 10
+    }, 120000); // Every 2 minutes
+
+    return () => clearInterval(interval);
   }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;

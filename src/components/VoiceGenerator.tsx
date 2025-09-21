@@ -76,12 +76,17 @@ export function VoiceGenerator({ onVoiceGenerated }: VoiceGeneratorProps) {
       }
 
       const selectedVoiceData = VOICES.find(v => v.id === selectedVoice);
+      
+      // Store the audio URL temporarily (in a real app, you'd upload to storage)
+      const audioUrl = url;
+      
       await supabase.from('voice_clips').insert({
         title: `Voice Clip - ${selectedVoiceData?.name} - ${new Date().toLocaleDateString()}`,
         voice_id: selectedVoice,
         voice_name: selectedVoiceData?.name || 'Unknown',
         file_size: audioBlob.size,
-        duration_seconds: Math.ceil(script.length / 150), // Approximate
+        duration_seconds: Math.ceil(script.length / 15 * 1.2), // More accurate estimate
+        audio_url: audioUrl,
         user_id: user.id
       });
       onVoiceGenerated?.();

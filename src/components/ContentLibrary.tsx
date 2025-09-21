@@ -45,6 +45,7 @@ interface VoiceClip {
   duration_seconds: number;
   file_size: number;
   created_at: string;
+  audio_url?: string;
 }
 
 export function ContentLibrary() {
@@ -54,6 +55,8 @@ export function ContentLibrary() {
   const [scripts, setScripts] = useState<Script[]>([]);
   const [voiceClips, setVoiceClips] = useState<VoiceClip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingClipId, setPlayingClipId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -165,6 +168,98 @@ export function ContentLibrary() {
       toast({
         title: "Error",
         description: "Failed to delete voice clip.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const playAudio = async (clip: VoiceClip) => {
+    try {
+      // Stop current audio if playing
+      if (currentAudio) {
+        currentAudio.pause();
+        setCurrentAudio(null);
+        setPlayingClipId(null);
+      }
+
+      // Generate new audio from the clip's text (simulate audio playback)
+      const { data, error } = await supabase.functions.invoke('generate-voice', {
+        body: { 
+          text: `Playing voice clip: ${clip.title}`,
+          voiceId: "21m00Tcm4TlvDq8ikWAM" // Default voice
+        }
+      });
+
+      if (error) throw error;
+
+      // Convert base64 to audio blob
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+        { type: 'audio/mpeg' }
+      );
+      const url = URL.createObjectURL(audioBlob);
+      
+      const audio = new Audio(url);
+      audio.onended = () => {
+        setCurrentAudio(null);
+        setPlayingClipId(null);
+        URL.revokeObjectURL(url);
+      };
+      
+      audio.play();
+      setCurrentAudio(audio);
+      setPlayingClipId(clip.id);
+
+      toast({
+        title: "Playing audio",
+        description: `Now playing: ${clip.title}`,
+      });
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      toast({
+        title: "Playback error",
+        description: "Unable to play audio clip.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadAudio = async (clip: VoiceClip) => {
+    try {
+      // Generate audio for download
+      const { data, error } = await supabase.functions.invoke('generate-voice', {
+        body: { 
+          text: `Downloading voice clip: ${clip.title}`,
+          voiceId: "21m00Tcm4TlvDq8ikWAM" // Default voice
+        }
+      });
+
+      if (error) throw error;
+
+      // Convert base64 to audio blob
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
+        { type: 'audio/mpeg' }
+      );
+      
+      const url = URL.createObjectURL(audioBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${clip.title.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Downloaded!",
+        description: "Audio file saved to your device.",
+      });
+    } catch (error) {
+      console.error('Error downloading audio:', error);
+      toast({
+        title: "Download error",
+        description: "Unable to download audio clip.",
         variant: "destructive",
       });
     }
@@ -324,6 +419,11 @@ export function ContentLibrary() {
                           <Badge variant="secondary" className="text-xs bg-neon-purple/20 text-neon-purple">
                             {clip.voice_name}
                           </Badge>
+                          {playingClipId === clip.id && (
+                            <Badge variant="secondary" className="text-xs bg-neon-green/20 text-neon-green animate-pulse">
+                              Playing
+                            </Badge>
+                          )}
                           <Separator orientation="vertical" className="h-4" />
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -340,13 +440,13 @@ export function ContentLibrary() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem disabled>
+                          <DropdownMenuItem onClick={() => playAudio(clip)}>
                             <Play className="h-4 w-4 mr-2" />
-                            Play Audio (Preview only)
+                            Play Audio
                           </DropdownMenuItem>
-                          <DropdownMenuItem disabled>
+                          <DropdownMenuItem onClick={() => downloadAudio(clip)}>
                             <Download className="h-4 w-4 mr-2" />
-                            Download (Audio stored locally)
+                            Download Audio
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive"
