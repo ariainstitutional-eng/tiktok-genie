@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,31 +22,27 @@ serve(async (req) => {
     }
 
     console.log('Generating voice for text:', text.substring(0, 50) + '...');
-    console.log('Using voice ID:', voiceId);
+    console.log('Using voice:', voiceId);
 
-    // Call ElevenLabs TTS API
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    // Call OpenAI TTS API
+    const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
-        'xi-api-key': elevenLabsApiKey,
+        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: text,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.4,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true
-        }
+        model: 'tts-1',
+        input: text,
+        voice: voiceId,
+        response_format: 'mp3',
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('ElevenLabs API error:', response.status, error);
-      throw new Error(`ElevenLabs API error: ${response.status} - ${error}`);
+      console.error('OpenAI TTS API error:', response.status, error);
+      throw new Error(`OpenAI TTS API error: ${response.status} - ${error}`);
     }
 
     // Convert audio response to base64

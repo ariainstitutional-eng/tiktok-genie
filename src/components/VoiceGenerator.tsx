@@ -10,12 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const VOICES = [
-  { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", description: "Young Female, Calm" },
-  { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi", description: "Young Female, Strong" },
-  { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella", description: "Young Female, Sweet" },
-  { id: "ErXwobaYiN019PkySvjV", name: "Antoni", description: "Young Male, Well-rounded" },
-  { id: "VR6AewLTigWG4xSOukaG", name: "Arnold", description: "Middle-aged Male, Crisp" },
-  { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", description: "Middle-aged Male, Deep" },
+  { id: "alloy", name: "Alloy", description: "Neutral, Balanced" },
+  { id: "echo", name: "Echo", description: "Male, Clear" },
+  { id: "fable", name: "Fable", description: "British Male, Expressive" },
+  { id: "onyx", name: "Onyx", description: "Male, Deep" },
+  { id: "nova", name: "Nova", description: "Female, Warm" },
+  { id: "shimmer", name: "Shimmer", description: "Female, Soft" },
 ];
 
 interface VoiceGeneratorProps {
