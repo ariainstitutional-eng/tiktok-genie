@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,9 +25,9 @@ serve(async (req) => {
       });
     }
 
-    if (!openAIApiKey) {
-      console.error('Missing OpenAI API key');
-      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+    if (!lovableApiKey) {
+      console.error('Missing Lovable API key');
+      return new Response(JSON.stringify({ error: 'AI service not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -51,14 +51,14 @@ Write ONE script only in a natural speaking style.`;
 
 Create a viral script that hooks viewers immediately and keeps them watching until the end.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -70,7 +70,7 @@ Create a viral script that hooks viewers immediately and keeps them watching unt
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('OpenAI API error:', error);
+      console.error('AI API error:', error);
       throw new Error(error.error?.message || 'Failed to generate script');
     }
 
